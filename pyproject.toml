@@ -1,0 +1,49 @@
+[build-system]
+requires = ["hatchling"]
+build-backend = "hatchling.build"
+
+[project]
+name = "adjutantvoice"
+version = "0.2.0"
+description = "OmniVoice TTS library, FastAPI server, and MCP server."
+requires-python = ">=3.11"
+dependencies = [
+    "fastapi",
+    "uvicorn[standard]",
+    "pydantic",
+    "pydantic-settings",
+    "soundfile",
+    "torch",
+    "typer",
+    "requests",
+    "fastmcp",
+    "ruamel.yaml",
+    "omnivoice",
+]
+
+[project.optional-dependencies]
+dev = [
+    "pytest",
+    "pytest-mock",
+    "httpx",       # required by fastmcp's own transport internals
+    "httpx2",      # preferred by starlette.testclient (avoids deprecation warning)
+]
+
+[project.scripts]
+av            = "adjutantvoice.cli:app"
+av-server     = "adjutantvoice.server:start"
+av-mcp        = "adjutantvoice.mcp:start"
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/adjutantvoice"]
+
+[tool.ruff]
+line-length = 100
+
+[tool.mypy]
+strict = true
+ignore_missing_imports = true
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+addopts = "-ra"
