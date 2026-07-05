@@ -125,7 +125,7 @@ def mcp_start(
         "Examples:\n\n"
         "  av speak \"Hello, world\"\n\n"
         "  av speak \"Reminder: standup in five minutes\" --output reminder.mp3\n\n"
-        "  av speak \"Status update\" --server http://lucy:8000"
+        "  av speak \"Status update\" --server http://lucy:{settings.port}"
     )
 )
 def speak(
@@ -134,7 +134,7 @@ def speak(
         None, "--output", "-o", help="Write the resulting MP3 to this path instead of playing it aloud."
     ),
     server_url: str = typer.Option(
-        "http://localhost:8000", "--server", help="Base URL of a running 'av server start' instance."
+        f"http://localhost:{settings.port}", "--server", help="Base URL of a running 'av server start' instance."
     ),
 ):
     """
@@ -167,7 +167,7 @@ def speak_file(
         None, "--output", "-o", help="Write the resulting MP3 to this path instead of playing it aloud."
     ),
     server_url: str = typer.Option(
-        "http://localhost:8000", "--server", help="Base URL of a running 'av server start' instance."
+        f"http://localhost:{settings.port}", "--server", help="Base URL of a running 'av server start' instance."
     ),
 ):
     """

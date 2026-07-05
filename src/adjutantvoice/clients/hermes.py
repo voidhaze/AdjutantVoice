@@ -15,6 +15,7 @@ from pathlib import Path
 
 import requests
 import typer
+from adjutantvoice.config import settings
 
 app = typer.Typer(add_completion=False)
 
@@ -23,7 +24,7 @@ app = typer.Typer(add_completion=False)
 def main(
     input_path: Path = typer.Argument(..., help="Path to the text file to synthesise."),
     output_path: Path = typer.Argument(..., help="Path to write the MP3 output."),
-    server_url: str = typer.Option("http://localhost:8000", "--server", help="TTS server base URL."),
+    server_url: str = typer.Option(f"http://localhost:{settings.port}", "--server", help="TTS server base URL."),
 ):
     text = input_path.read_text(encoding="utf-8")
     resp = requests.post(f"{server_url}/synthesize", json={"text": text}, timeout=120)

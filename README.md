@@ -25,6 +25,10 @@ src/adjutantvoice/
 # From PyPI (stable release)
 pip install adjutantvoice
 
+or
+
+python3 -m pip install adjutantvoice 
+
 # For development (clone with venv)
 git clone https://github.com/voidhaze/AdjutantVoice.git
 
@@ -93,15 +97,15 @@ All settings can be overridden via environment variables prefixed `AV_`:
 | Variable             | Default            | Description                  |
 |---------------------|--------------------|------------------------------|
 | `AV_HOST`           | `0.0.0.0`          | Server bind host             |
-| `AV_PORT`           | `8000`             | Server bind port             |
-| `AV_MCP_PORT`       | `8001`             | MCP server port (HTTP mode)  |
+| `AV_PORT`           | `8111`             | Server bind port             |
+| `AV_MCP_PORT`       | `8222`             | MCP server port (HTTP mode)  |
 | `AV_DEVICE`         | `cuda:0`           | Torch device                 |
 | `AV_DTYPE`          | `float16`          | Model dtype                  |
 | `AV_VOICE_CLONE_PATH` | (bundled .pkl)   | Path to voice clone pickle   |
 
 ## Open WebUI
 
-Set **TTS Engine** to `Custom TTS` and **API Base URL** to `http://<host>:8000/v1`.
+Set **TTS Engine** to `Custom TTS` and **API Base URL** to `http://<host>:<port>/v1`.
 
 ## MCP (Claude Desktop / Claude Code)
 

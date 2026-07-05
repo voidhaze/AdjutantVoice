@@ -4,6 +4,7 @@ import requests
 from typer.testing import CliRunner
 
 from adjutantvoice.clients import hermes as hermes_client
+from adjutantvoice.config import settings
 
 runner = CliRunner()
 
@@ -36,7 +37,7 @@ def test_reads_input_writes_output(monkeypatch, tmp_path):
     assert result.exit_code == 0
     assert output_path.read_bytes() == b"FAKE_MP3"
     assert captured["json"] == {"text": "read this aloud"}
-    assert captured["url"] == "http://localhost:8000/synthesize"
+    assert captured["url"] == f"http://localhost:{settings.port}/synthesize"
 
 
 def test_respects_custom_server_url(monkeypatch, tmp_path):
