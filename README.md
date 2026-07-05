@@ -26,10 +26,6 @@ src/adjutantvoice/
 # From PyPI (stable release)
 pipx install adjutantvoice
 
-or
-
-uv tool install adjutantvoice
-
 # First thing you should do after install if you want to use a custom voice is to run the clone, then decide which service you want to use.
 av voice create-clone --ref-audio path/to/my_reference_voice.mp3
 
@@ -42,9 +38,6 @@ av voice create-clone --ref-audio path/to/my_reference_voice.mp3
 # Using Pipx
 pipx uninstall adjutantvoice
 
-or
-
-uv tool uninstall adjutantvoice
 
 ```
 
