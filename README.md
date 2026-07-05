@@ -22,14 +22,31 @@ src/adjutantvoice/
 ## Install
 
 ```bash
+
 # From PyPI (stable release)
-pip install adjutantvoice
+sudo apt install pipx
 
-or
+pipx install adjutantvoice
 
-python3 -m pip install adjutantvoice 
+# First thing you should do after install if you want to use a custom voice is to run the clone, then decide which service you want to use.
+av voice create-clone --ref-audio path/to/my_reference_voice.mp3
 
-# For development (clone with venv)
+```
+
+## Uninstall
+
+```bash
+
+# Using Pipx
+pipx uninstall adjutantvoice
+
+```
+
+## Development
+
+```bash
+
+# Install
 git clone https://github.com/voidhaze/AdjutantVoice.git
 
 sudo apt install python3-venv
@@ -40,19 +57,8 @@ source .venv/adjutantvoice/bin/activate
 
 pip install ".[dev]"
 
-# deactivate venv
-deactivate
 
-# First thing you should do after install if you want to use a custom voice is to run the clone, then decide which service you want to use.
-av voice create-clone [--ref-audio path/to/my_reference_voice.mp3]
-```
-
-## Uninstall
-
-```bash
-pip uninstall adjutantvoice
-
-# Uninstall development version
+# Uninstall
 cd ~/your_dev_git_dir/AdjutantVoice
 
 source .venv/adjutantvoice/bin/activate
@@ -61,6 +67,7 @@ pip uninstall adjutantvoice
 
 # deactivate venv
 deactivate
+
 ```
 
 ## CLI
