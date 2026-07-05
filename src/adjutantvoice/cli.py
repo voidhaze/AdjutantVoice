@@ -6,7 +6,7 @@ Usage:
   av mcp start [--transport stdio|streamable-http] [--port PORT]
   av speak <text>
   av speak-file <path>
-  av voice create-clone [--ref-audio PATH] [--output PATH]
+  av voice create-clone --ref-audio PATH [--output PATH]
   av install claude
   av install hermes
 """
@@ -212,8 +212,8 @@ app.add_typer(voice_app, name="voice", rich_help_panel="Integrations")
     ),
 )
 def voice_create_clone(
-    ref_audio: Optional[Path] = typer.Option(
-        None, "--ref-audio", help="A short, clean audio sample (WAV recommended) of the voice to clone."
+    ref_audio: Path = typer.Option(
+        ..., "--ref-audio", help="A short, clean audio sample (WAV recommended) of the voice to clone."
     ),
     output: Optional[Path] = typer.Option(
         None, "--output", "-o", help="Where to save the resulting clone prompt (.pkl). Defaults to a path under the AdjutantVoice config directory."

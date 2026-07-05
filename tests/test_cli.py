@@ -124,14 +124,27 @@ def test_speak_file_reads_and_synthesizes(monkeypatch, tmp_path):
 
 def test_voice_create_clone_invokes_library_function(monkeypatch, tmp_path):
     saved_path = tmp_path / "clone.pkl"
+    ref_audio = tmp_path / "ref.wav"
+    ref_audio.write_bytes(b"fake audio bytes")
     monkeypatch.setattr(
         "adjutantvoice.voice.create_voice_clone", lambda ref_audio, output_path: saved_path
     )
 
-    result = runner.invoke(cli.app, ["voice", "create-clone"])
+    result = runner.invoke(cli.app, ["voice", "create-clone", "--ref-audio", str(ref_audio)])
 
     assert result.exit_code == 0
     assert str(saved_path) in result.stdout
+
+
+def test_voice_create_clone_requires_ref_audio(monkeypatch, tmp_path):
+    monkeypatch.setattr(
+        "adjutantvoice.voice.create_voice_clone", lambda ref_audio, output_path: tmp_path
+    )
+
+    result = runner.invoke(cli.app, ["voice", "create-clone"])
+
+    assert result.exit_code != 0
+    assert "--ref-audio" in result.stdout or "--ref-audio" in (result.stderr or "")
 
 
 # ---------------------------------------------------------------------------
