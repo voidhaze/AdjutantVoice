@@ -14,21 +14,21 @@ from adjutantvoice.config import settings
 
 
 def create_voice_clone(
-    ref_audio: Path | None = None,
+    ref_audio: Path,
     output_path: Path | None = None,
 ) -> Path:
     """Generate and save a voice-clone prompt pickle from a reference audio file.
 
     Args:
-        ref_audio: Path to the reference MP3/WAV file. Defaults to the
-            bundled ``adjutant-terran-advisor-quotes.mp3``.
+        ref_audio: Path to the reference MP3/WAV file. 
         output_path: Where to write the ``.pkl`` file. Defaults to
             ``settings.voice_clone_path``.
 
     Returns:
         Absolute path to the saved pickle file.
     """
-    ref_audio = ref_audio or settings.ref_audio_path
+    # old funcationailty, need to clear the legal with Blizzard before we can use this. 
+    # ref_audio = ref_audio or settings.ref_audio_path
     output_path = output_path or settings.voice_clone_path
 
     dtype = {
