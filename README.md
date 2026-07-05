@@ -24,6 +24,10 @@ src/adjutantvoice/
 ```bash
 
 # From PyPI (stable release)
+sudo apt update
+sudo apt install pipx
+pipx ensurepath
+
 pipx install adjutantvoice
 
 # First thing you should do after install if you want to use a custom voice is to run the clone, then decide which service you want to use.
