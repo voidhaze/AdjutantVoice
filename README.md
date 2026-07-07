@@ -19,6 +19,12 @@ src/adjutantvoice/
     └── hermes.py      # install/uninstall Hermes TTS config
 ```
 
+## Supported Platforms
+
+Currently this is only supported on Linux / Ubuntu
+
+You may be able to install on Windows and MacOS via pipx, however some of the integrations will not work out of the box.
+
 ## Install
 
 ```bash
@@ -115,7 +121,9 @@ All settings can be overridden via environment variables prefixed `AV_`:
 
 ## Open WebUI
 
-Set **TTS Engine** to `Custom TTS` and **API Base URL** to `http://<host>:<port>/v1`.
+~~Set **TTS Engine** to `Custom TTS` and **API Base URL** to `http://<host>:<port>/v1`.~~
+
+Latest Open WebUI build breaks the integration, you need to set the api in the admin settings and also enable TTS voice response in the normal settings.
 
 ## MCP (Claude Desktop / Claude Code)
 
