@@ -1,6 +1,6 @@
 # AdjutantVoice
 
-OmniVoice TTS toolkit — persistent FastAPI server, Open WebUI Custom TTS compatibility, FastMCP server, and a unified CLI.
+OmniVoice TTS toolkit — persistent FastAPI server, Hermes Agent Custom TTS compatibility, FastMCP server, and a unified CLI.
 
 ## Structure
 
