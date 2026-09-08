@@ -29,7 +29,6 @@ error (`extra="ignore"`).
 | `voice_clone_dir` | `AV_VOICE_CLONE_DIR` | `~/.adjutantvoice/voices` | Directory where user-generated clone `.pkl` files live. |
 | `default_voice_clone_name` | `AV_DEFAULT_VOICE_CLONE_NAME` | `default` | Base filename (without `.pkl`) for the clone `tts.load()` looks for automatically. |
 | `bundled_voice_clone_path` | `AV_BUNDLED_VOICE_CLONE_PATH` | `<package>/assets/models/default.pkl` | Voice-clone pickle shipped in the repo/package. Used when no clone exists at `voice_clone_path`, so a fresh install works out of the box without running `av voice create-clone`. |
-| `ref_audio_path` | `AV_REF_AUDIO_PATH` | `<package>/assets/adjutant-terran-advisor-quotes.mp3` | Default reference audio for `av voice create-clone` when `--ref-audio` isn't given. |
 | `default_voice_instruct` | `AV_DEFAULT_VOICE_INSTRUCT` | `female` | OmniVoice Voice Design instruct string used when no clone is found. |
 | `sample_rate` | `AV_SAMPLE_RATE` | `24000` | Sample rate (Hz) used when encoding synthesized audio to MP3. |
 | `available_voices` | `AV_AVAILABLE_VOICES` | `["adjutant"]` | Voice list reported by `GET /v1/audio/voices` (Open WebUI). |

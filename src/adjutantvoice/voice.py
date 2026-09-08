@@ -27,8 +27,6 @@ def create_voice_clone(
     Returns:
         Absolute path to the saved pickle file.
     """
-    # old funcationailty, need to clear the legal with Blizzard before we can use this. 
-    # ref_audio = ref_audio or settings.ref_audio_path
     output_path = output_path or settings.voice_clone_path
 
     dtype = {

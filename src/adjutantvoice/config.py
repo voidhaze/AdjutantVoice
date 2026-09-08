@@ -48,7 +48,6 @@ class Settings(BaseSettings):
     voice_clone_dir: Path = Path.home() / ".adjutantvoice" / "voices"
     default_voice_clone_name: str = "default"
     bundled_voice_clone_path: Path = ASSETS_DIR / "models" / "default.pkl"
-    ref_audio_path: Path = ASSETS_DIR / "adjutant-terran-advisor-quotes.mp3"
     default_voice_instruct: str = "female"
     sample_rate: int = 24_000
     available_voices: list[str] = ["adjutant"]
