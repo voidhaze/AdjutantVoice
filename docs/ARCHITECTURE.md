@@ -56,23 +56,31 @@ startup rather than checking `is_loaded()` themselves.
 
 ## Voice: clone vs. fallback
 
-On load, `tts.py` looks for a voice-clone prompt at
-`settings.voice_clone_path` (`~/.adjutantvoice/voices/default.pkl` by
-default):
+On load, `tts.py` resolves a voice-clone prompt by walking these options in
+order and taking the first path that exists:
 
-- **If found**, it's unpickled and used for every synthesis call
-  (`model.generate(text=..., voice_clone_prompt=...)`).
-- **If not found** (e.g. a fresh clone with no clone generated yet),
-  `tts.py` falls back to OmniVoice's Voice Design mode, passing
-  `instruct=settings.default_voice_instruct` instead.
+1. An explicit `voice_clone_path=` argument to `tts.load()`.
+2. `settings.voice_clone_path` — a personal clone at
+   `~/.adjutantvoice/voices/default.pkl` (by default), generated via
+   `av voice create-clone`.
+3. `settings.bundled_voice_clone_path` — the `default.pkl` shipped inside
+   the package (`assets/models/`), so a fresh install has a voice out of
+   the box.
+
+If a pickle is found it's unpickled and used for every synthesis call
+(`model.generate(text=..., voice_clone_prompt=...)`). If none of the paths
+exist, `tts.py` falls back to OmniVoice's Voice Design mode, passing
+`instruct=settings.default_voice_instruct` instead.
 
 `tts.using_voice_clone()` reports which mode is active, and it's surfaced
 directly in the `/health` endpoint's `voice_mode` field (`"clone"` vs.
 `"default"`) so it's easy to tell at a glance which voice a running server
 is actually using.
 
-Run `av voice create-clone` to generate the pickle from a reference audio
-file (`voice.py`); this only needs to be done once per machine.
+Run `av voice create-clone` to generate a personal pickle from a reference
+audio file (`voice.py`); it takes precedence over the bundled clone and
+only needs to be done once per machine. See
+[CONFIGURATION.md](./CONFIGURATION.md) for the full resolution order.
 
 ## Transports
 

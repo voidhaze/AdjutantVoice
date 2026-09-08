@@ -17,7 +17,8 @@ runtime deps individually instead and skip those two:
 
 ```bash
 pip install fastapi "uvicorn[standard]" pydantic pydantic-settings \
-    soundfile typer requests fastmcp "ruamel.yaml" pytest pytest-mock httpx httpx2
+    soundfile typer shellingham requests fastmcp "ruamel.yaml" \
+    pytest pytest-mock httpx httpx2
 pip install -e . --no-deps
 ```
 
@@ -69,9 +70,11 @@ testing against a real GPU machine.
 - `reset_tts_state` *(autouse)* — calls `tts.unload()` before and after every
   test, since `tts.py`'s model state is process-wide module globals. Without
   this, one test's `tts.load()` would leak into every test that runs after it.
-- `tmp_settings` — points `settings.voice_clone_dir` and
-  `settings.tts_output_dir` at `tmp_path` so tests never touch a real
-  `~/.adjutantvoice` directory.
+- `tmp_settings` — points `settings.voice_clone_dir`,
+  `settings.tts_output_dir`, `settings.bundled_voice_clone_path` and
+  `settings.completion_prompt_marker` at paths under `tmp_path` so tests
+  never touch a real `~/.adjutantvoice` directory or the repo's
+  checked-in `assets/models/default.pkl`.
 - `fake_model` / `fake_omnivoice_cls` — the mocked model described above.
 
 ## Gotchas if you're adding tests

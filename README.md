@@ -13,11 +13,20 @@ src/adjutantvoice/
 ├── server.py          # FastAPI server (legacy + Open WebUI /v1 endpoints)
 ├── mcp.py             # FastMCP server (tts_file, tts_stream, tts_speak)
 ├── cli.py             # unified `av` CLI entry point
+├── assets/
+│   └── models/
+│       └── default.pkl  # bundled voice clone — used out of the box until you make your own
 ├── clients/
 │   └── hermes.py      # Hermes command client (invoked by Hermes agent)
 └── integrations/
     └── hermes.py      # install/uninstall Hermes TTS config
 ```
+
+## Documentation
+
+- [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) — how the layers fit together (transports → `tts.py` → model)
+- [docs/CONFIGURATION.md](docs/CONFIGURATION.md) — full `AV_*` settings reference and precedence rules
+- [docs/TESTING.md](docs/TESTING.md) — running the suite without a GPU, test layout, fixtures
 
 ## Supported Platforms
 
@@ -99,8 +108,11 @@ av speak "Hello" --output hello.mp3
 # Synthesise from a text file
 av speak-file script.txt --output script.mp3
 
-# Create a voice clone from reference audio
-av voice create-clone [--ref-audio path/to/audio.mp3] [--output path/to/clone.pkl]
+# Create a voice clone from reference audio (--ref-audio is required)
+av voice create-clone --ref-audio path/to/audio.mp3 [--output path/to/clone.pkl]
+
+# Register AdjutantVoice as an MCP server in Claude Desktop
+av install claude [--name "AdjutantVoice TTS"]
 
 # Install as Hermes TTS provider
 av install hermes
@@ -145,17 +157,28 @@ anyway, or if you just don't want to be asked).
 
 ## Configuration
 
-All settings can be overridden via environment variables prefixed `AV_`:
+All settings can be overridden via environment variables prefixed `AV_` (or a
+`.env` file in the working directory). The common ones:
 
 | Variable             | Default            | Description                  |
 |---------------------|--------------------|------------------------------|
-| `AV_HOST`           | `0.0.0.0`          | Server bind host             |
-| `AV_PORT`           | `8111`             | Server bind port             |
-| `AV_MCP_PORT`       | `8222`             | MCP server port (HTTP mode)  |
+| `AV_HOST`           | `0.0.0.0`          | FastAPI server bind host      |
+| `AV_PORT`           | `8111`             | FastAPI server port          |
+| `AV_MCP_PORT`       | `8222`             | MCP server port (`streamable-http` transport) |
+| `AV_MODEL_ID`       | `k2-fsa/OmniVoice` | HuggingFace-style model identifier |
 | `AV_DEVICE`         | `cuda:0`           | Torch device                 |
-| `AV_DTYPE`          | `float16`          | Model dtype                  |
-| `AV_VOICE_CLONE_PATH` | (bundled .pkl)   | Path to voice clone pickle   |
-| `AV_SKIP_COMPLETION_PROMPT` | (unset) | Set to skip the one-time "enable tab completion?" prompt on first interactive `av` use |
+| `AV_DTYPE`          | `float16`          | Model dtype (`float16` / `bfloat16` / `float32`) |
+| `AV_VOICE_CLONE_DIR` | `~/.adjutantvoice/voices` | Directory for user-generated voice clones |
+| `AV_DEFAULT_VOICE_CLONE_NAME` | `default` | Clone filename (without `.pkl`) loaded automatically |
+| `AV_DEFAULT_VOICE_INSTRUCT` | `female`   | Voice Design instruct used when no clone is found |
+| `AV_SAMPLE_RATE`    | `24000`            | Sample rate (Hz) for MP3 encoding |
+| `AV_TTS_OUTPUT_DIR` | `tts_output`       | Where the MCP `tts_file` tool writes MP3s |
+| `AV_SKIP_COMPLETION_PROMPT` | (unset)   | Set to skip the one-time "enable tab completion?" prompt on first interactive `av` use |
+
+See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for the complete list
+(including `AV_AVAILABLE_VOICES`, `AV_MODEL_LABEL`, `AV_BUNDLED_VOICE_CLONE_PATH`,
+`AV_COMPLETION_PROMPT_MARKER`), the derived `voice_clone_path`, and the
+clone-resolution order.
 
 ## Open WebUI
 
@@ -166,8 +189,13 @@ Latest Open WebUI build breaks the integration, you need to set the api in the a
 ## MCP (Claude Desktop / Claude Code)
 
 ```bash
-fastmcp install adjutantvoice.mcp --name "AdjutantVoice TTS"
+# Registers the MCP server with Claude Desktop by running `fastmcp install`
+# against adjutantvoice/mcp.py. Restart Claude Desktop afterwards.
+av install claude [--name "AdjutantVoice TTS"]
 ```
+
+For `stdio` clients that launch the server themselves (e.g. Claude Code),
+point them at `av mcp start --transport stdio`.
 
 ## MCP (General)
 

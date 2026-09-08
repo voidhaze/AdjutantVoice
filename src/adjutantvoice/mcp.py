@@ -7,18 +7,15 @@ Tools:
   tts_speak   — synthesise text and play it aloud on the server machine
 
 Run via the unified CLI:
-  av mcp start                                # stdio (default)
-  av mcp start --transport streamable-http    # HTTP on the configured port
+  av mcp start                                # streamable-http (default)
+  av mcp start --transport stdio             # stdio, for MCP clients that launch the server
   av mcp start [--transport stdio|streamable-http] [--port PORT]
 
 Run directly:
-  python -m adjutantvoice.mcp                 # stdio
-  python -m adjutantvoice.mcp streamable-http # HTTP
+  python -m adjutantvoice.mcp                 # streamable-http (default)
 
-MCP port is configured via AV_MCP_PORT (default: see config.py).
-
-For default HTTP remote clients use:
-  av mcp start --transport streamable-http --port 8001
+MCP port is configured via AV_MCP_PORT (default: 8222 — see config.py),
+or overridden with --port.
 
 """
 
