@@ -32,8 +32,6 @@ src/adjutantvoice/
 
 Currently this is only supported on Linux / Ubuntu
 
-You may be able to install on Windows and MacOS via pipx, however some of the integrations will not work out of the box.
-
 ## Install
 
 ```bash
@@ -45,7 +43,6 @@ pipx ensurepath
 
 pipx install adjutantvoice
 
-# First thing you should do after install if you want to use a custom voice is to run the clone, then decide which service you want to use.
 av voice create-clone --ref-audio path/to/my_reference_voice.mp3
 
 ```
