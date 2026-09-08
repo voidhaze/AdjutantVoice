@@ -18,8 +18,6 @@ Command-line interface (av)
 MP3 generation, streaming and server-side playback
 NVIDIA CUDA acceleration for local inference
 
-Why AdjutantVoice?
-
 AdjutantVoice is designed for developers who want a self-hosted, local TTS backend for AI agents and applications.
 
 Instead of coupling an application directly to an individual TTS implementation, AdjutantVoice keeps the OmniVoice model running in a persistent server and exposes several standard interfaces:
@@ -228,3 +226,15 @@ The standard MCP server should work with most applications, take care to configu
 ## Hermes Agent TTS integration
 
 Install via CLI, run the server and then enable "/voice on" and "/voice tts" inside hermes agent.
+
+## Use cases
+
+AdjutantVoice can be used as a local voice backend for:
+
+AI coding agents — give Hermes Agent, Claude Code and other agents spoken responses.
+Claude Desktop — expose local text-to-speech through MCP.
+OpenAI-compatible applications — use AdjutantVoice anywhere an application supports the OpenAI speech API.
+Open WebUI — connect a local OmniVoice backend as a custom TTS provider.
+Voice assistants — use the persistent HTTP API as a local speech synthesis service.
+Voice cloning experiments — create and reuse a voice clone from reference audio.
+Local/private AI systems — perform TTS locally without sending text or voice data to a cloud provider.
