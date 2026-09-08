@@ -88,6 +88,9 @@ deactivate
 ## CLI
 
 ```bash
+# Print a guided getting-started walkthrough
+av tutorial
+
 # Start the TTS HTTP server
 av server start [--host HOST] [--port PORT]
 

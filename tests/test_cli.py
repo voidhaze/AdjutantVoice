@@ -32,6 +32,20 @@ class _FakeResponse:
 
 
 # ---------------------------------------------------------------------------
+# av tutorial
+# ---------------------------------------------------------------------------
+
+def test_tutorial_prints_walkthrough():
+    result = runner.invoke(cli.app, ["tutorial"])
+
+    assert result.exit_code == 0
+    assert "Getting started" in result.output
+    assert "av server start" in result.output
+    assert "av speak" in result.output
+    assert "av voice create-clone" in result.output
+
+
+# ---------------------------------------------------------------------------
 # av speak
 # ---------------------------------------------------------------------------
 

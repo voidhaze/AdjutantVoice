@@ -2,6 +2,7 @@
 AdjutantVoice CLI — single entry point for all functionality.
 
 Usage:
+  av tutorial
   av server start [--host HOST] [--port PORT] [--reload]
   av mcp start [--transport stdio|streamable-http] [--port PORT]
   av speak <text>
@@ -26,20 +27,9 @@ from adjutantvoice.config import settings
 
 app = typer.Typer(
     name="av",
-    help="AdjutantVoice — [bold]OmniVoice[/bold] TTS toolkit.",
+    help="AdjutantVoice — [bold]OmniVoice[/bold] TTS toolkit. Run [bold]av tutorial[/bold] for a guided walkthrough.",
     rich_markup_mode="rich",
     no_args_is_help=True,
-    epilog=(
-        "Common workflows:\n\n"
-        "  av server start                 Start the HTTP TTS server locally.\n\n"
-        "  av speak \"hello there\"           Speak text using the running server.\n\n"
-        "  av voice create-clone --ref-audio me.wav   Build a reusable voice clone.\n\n"
-        "  av install claude                Register AdjutantVoice with Claude Desktop.\n\n"
-        "  av install hermes                Register AdjutantVoice as the default TTS provider for Hermes agents.\n\n"
-        "Run [bold]av COMMAND --help[/bold] for details on any command.\n\n"
-        "\n\n"
-        "To get started run \"av voice create-clone\" to build a voice clone, fire up the server with \"av server start\" then \"av speak\" to test it out."
-    ),
 )
 
 
@@ -91,6 +81,65 @@ def _maybe_prompt_completion_install() -> None:
             f"Run `av --install-completion` yourself to try again.",
             err=True,
         )
+
+
+# ---------------------------------------------------------------------------
+# tutorial
+# ---------------------------------------------------------------------------
+
+@app.command()
+def tutorial() -> None:
+    """
+    Print a short, guided walkthrough for getting started with AdjutantVoice.
+
+    Covers the common path end to end: build a voice clone, start the server,
+    and synthesise speech. Run [bold]av COMMAND --help[/bold] for the full
+    option list on any individual command.
+    """
+    from rich.console import Console
+
+    console = Console()
+    steps = [
+        (
+            "1. (Optional) Build a voice clone",
+            'av voice create-clone --ref-audio me.wav',
+            "Turns a short, clean audio sample into a reusable clone prompt. "
+            "Skip this to use the default voice.",
+        ),
+        (
+            "2. Start the TTS server",
+            "av server start",
+            "Serves the HTTP API (including the OpenAI-compatible /v1/ endpoints). "
+            "The model loads on the first request, so that one is slower than the rest.",
+        ),
+        (
+            "3. Speak some text",
+            'av speak "hello there"',
+            "Synthesises via the running server and plays the audio with ffplay. "
+            "Add --output speech.mp3 to save it instead.",
+        ),
+        (
+            "4. Speak a whole file",
+            "av speak-file notes.txt",
+            "Reads a UTF-8 text file in full — handy for longer content than you'd "
+            "want to type into 'av speak'.",
+        ),
+        (
+            "5. Wire up integrations",
+            "av install claude   ·   av install hermes",
+            "Register AdjutantVoice as an MCP server in Claude Desktop, or as the "
+            "default TTS provider for Hermes agents.",
+        ),
+    ]
+
+    console.print("\n[bold]Getting started with AdjutantVoice[/bold]\n")
+    for title, command, detail in steps:
+        console.print(f"[bold cyan]{title}[/bold cyan]")
+        console.print(f"    [green]$[/green] {command}")
+        console.print(f"    [dim]{detail}[/dim]\n")
+    console.print(
+        "Run [bold]av COMMAND --help[/bold] for details on any command.\n"
+    )
 
 
 # ---------------------------------------------------------------------------
