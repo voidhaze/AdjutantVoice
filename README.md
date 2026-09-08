@@ -180,12 +180,6 @@ See [docs/CONFIGURATION.md](docs/CONFIGURATION.md) for the complete list
 `AV_COMPLETION_PROMPT_MARKER`), the derived `voice_clone_path`, and the
 clone-resolution order.
 
-## Open WebUI
-
-~~Set **TTS Engine** to `Custom TTS` and **API Base URL** to `http://<host>:<port>/v1`.~~
-
-Latest Open WebUI build breaks the integration, you need to set the api in the admin settings and also enable TTS voice response in the normal settings.
-
 ## MCP (Claude Desktop / Claude Code)
 
 ```bash
