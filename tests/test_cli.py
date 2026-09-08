@@ -175,3 +175,85 @@ def test_install_hermes_calls_integration_install(monkeypatch):
 
     assert result.exit_code == 0
     assert called == [True]
+
+
+# ---------------------------------------------------------------------------
+# First-run completion prompt
+# ---------------------------------------------------------------------------
+
+def test_completion_prompt_skipped_when_not_interactive(monkeypatch, tmp_settings):
+    monkeypatch.setattr("adjutantvoice.integrations.hermes.install", lambda: None)
+    # _is_interactive() is False under CliRunner by default — no patching needed.
+    confirm_calls = []
+    monkeypatch.setattr(cli.typer, "confirm", lambda *a, **k: confirm_calls.append(1) or True)
+
+    result = runner.invoke(cli.app, ["install", "hermes"], catch_exceptions=False)
+
+    assert result.exit_code == 0
+    assert confirm_calls == []
+    assert not tmp_settings.completion_prompt_marker.exists()
+
+
+def test_completion_prompt_skipped_when_env_var_set(monkeypatch, tmp_settings):
+    monkeypatch.setattr("adjutantvoice.integrations.hermes.install", lambda: None)
+    monkeypatch.setenv("AV_SKIP_COMPLETION_PROMPT", "1")
+    monkeypatch.setattr(cli, "_is_interactive", lambda: True)
+    confirm_calls = []
+    monkeypatch.setattr(cli.typer, "confirm", lambda *a, **k: confirm_calls.append(1) or True)
+
+    result = runner.invoke(cli.app, ["install", "hermes"], catch_exceptions=False)
+
+    assert result.exit_code == 0
+    assert confirm_calls == []
+
+
+def test_completion_prompt_not_asked_again_once_marker_exists(monkeypatch, tmp_settings):
+    monkeypatch.setattr("adjutantvoice.integrations.hermes.install", lambda: None)
+    tmp_settings.completion_prompt_marker.parent.mkdir(parents=True, exist_ok=True)
+    tmp_settings.completion_prompt_marker.write_text("prompted\n", encoding="utf-8")
+    monkeypatch.setattr(cli, "_is_interactive", lambda: True)
+    confirm_calls = []
+    monkeypatch.setattr(cli.typer, "confirm", lambda *a, **k: confirm_calls.append(1) or True)
+
+    result = runner.invoke(cli.app, ["install", "hermes"], catch_exceptions=False)
+
+    assert result.exit_code == 0
+    assert confirm_calls == []
+
+
+def test_completion_prompt_installs_on_yes(monkeypatch, tmp_settings):
+    monkeypatch.setattr("adjutantvoice.integrations.hermes.install", lambda: None)
+    monkeypatch.setattr(cli, "_is_interactive", lambda: True)
+    monkeypatch.setattr(cli.typer, "confirm", lambda *a, **k: True)
+    install_calls = []
+    monkeypatch.setattr(
+        cli.subprocess,
+        "run",
+        lambda *a, **k: install_calls.append(a) or real_subprocess.CompletedProcess(a, 0),
+    )
+
+    result = runner.invoke(cli.app, ["install", "hermes"], catch_exceptions=False)
+
+    assert result.exit_code == 0
+    assert len(install_calls) == 1
+    assert install_calls[0][0][1] == "--install-completion"
+    assert tmp_settings.completion_prompt_marker.exists()
+
+
+def test_completion_prompt_skips_install_on_no(monkeypatch, tmp_settings):
+    monkeypatch.setattr("adjutantvoice.integrations.hermes.install", lambda: None)
+    monkeypatch.setattr(cli, "_is_interactive", lambda: True)
+    monkeypatch.setattr(cli.typer, "confirm", lambda *a, **k: False)
+    install_calls = []
+    monkeypatch.setattr(
+        cli.subprocess,
+        "run",
+        lambda *a, **k: install_calls.append(a) or real_subprocess.CompletedProcess(a, 0),
+    )
+
+    result = runner.invoke(cli.app, ["install", "hermes"], catch_exceptions=False)
+
+    assert result.exit_code == 0
+    assert install_calls == []
+    # Recorded anyway, so the user is never asked twice.
+    assert tmp_settings.completion_prompt_marker.exists()

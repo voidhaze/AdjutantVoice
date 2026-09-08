@@ -13,6 +13,7 @@ Usage:
 
 from __future__ import annotations
 
+import os
 import subprocess
 import sys
 import tempfile
@@ -40,6 +41,56 @@ app = typer.Typer(
         "To get started run \"av voice create-clone\" to build a voice clone, fire up the server with \"av server start\" then \"av speak\" to test it out."
     ),
 )
+
+
+@app.callback()
+def _main() -> None:
+    _maybe_prompt_completion_install()
+
+
+def _is_interactive() -> bool:
+    """True when both stdin and stdout are attached to a real terminal."""
+    return sys.stdin.isatty() and sys.stdout.isatty()
+
+
+def _maybe_prompt_completion_install() -> None:
+    """One-time, opt-in nudge to set up shell tab completion.
+
+    Runs at most once per machine: on the first invocation of any real `av`
+    command, if we're attached to an interactive terminal and haven't
+    already asked, offer to run `av --install-completion`. Silently skipped
+    for non-interactive use (CI, scripts, piped output) and for the
+    `--install-completion` / `--show-completion` flags themselves, since
+    those are eager options that exit before this callback body runs.
+    """
+    if os.environ.get("AV_SKIP_COMPLETION_PROMPT"):
+        return
+    if not _is_interactive():
+        return  # never prompt for CI/scripted/piped invocations
+
+    marker = settings.completion_prompt_marker
+    if marker.exists():
+        return
+
+    marker.parent.mkdir(parents=True, exist_ok=True)
+    want_completion = typer.confirm(
+        "Enable tab completion for the `av` command in your shell?", default=True
+    )
+    # Record that we asked regardless of the answer, so this is a one-shot.
+    marker.write_text("prompted\n", encoding="utf-8")
+
+    if not want_completion:
+        typer.echo("Skipping — run `av --install-completion` any time to enable it later.")
+        return
+
+    try:
+        subprocess.run([sys.argv[0], "--install-completion"], check=True)
+    except Exception as exc:
+        typer.echo(
+            f"Couldn't install completion automatically ({exc}). "
+            f"Run `av --install-completion` yourself to try again.",
+            err=True,
+        )
 
 
 # ---------------------------------------------------------------------------

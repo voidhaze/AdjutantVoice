@@ -94,3 +94,9 @@ testing against a real GPU machine.
   shell rc file and depends on `shellingham` detecting the *running*
   shell), so there's nothing meaningful to unit test — verify it manually
   by running the command and restarting your shell.
+- **The first-run completion prompt (`_maybe_prompt_completion_install`
+  in `cli.py`) *is* covered**, via `cli._is_interactive` — tests
+  monkeypatch that function directly instead of trying to fake a real
+  tty through `CliRunner` (which always reports non-interactive stdin/
+  stdout, so the prompt is silently skipped in every other test without
+  needing explicit patching).

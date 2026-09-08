@@ -34,6 +34,7 @@ error (`extra="ignore"`).
 | `available_voices` | `AV_AVAILABLE_VOICES` | `["adjutant"]` | Voice list reported by `GET /v1/audio/voices` (Open WebUI). |
 | `model_label` | `AV_MODEL_LABEL` | `omnivoice` | Model id reported by `GET /v1/models` and used as the default `model` field in `/v1/audio/speech` requests. |
 | `tts_output_dir` | `AV_TTS_OUTPUT_DIR` | `tts_output` (relative to CWD) | Directory the MCP `tts_file` tool writes generated MP3s into. Created automatically on MCP server startup. |
+| `completion_prompt_marker` | `AV_COMPLETION_PROMPT_MARKER` | `~/.adjutantvoice/.completion_prompted` | Marker file recording that the one-time "enable tab completion?" prompt has already been shown, so `av` doesn't ask again. Set `AV_SKIP_COMPLETION_PROMPT=1` (not a `Settings` field — read directly from the environment) to suppress the prompt outright. |
 
 ## Derived value: `voice_clone_path`
 

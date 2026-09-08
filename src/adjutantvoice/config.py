@@ -56,6 +56,16 @@ class Settings(BaseSettings):
     # MCP output
     tts_output_dir: Path = Path("tts_output")
 
+    # CLI
+    #
+    # There's no such thing as a pip/pipx "post-install hook" for wheels,
+    # so shell completion can't be wired up automatically at install time.
+    # Instead, `av` offers to run `--install-completion` once, the first
+    # time any command is actually invoked interactively. This marker file
+    # records that the offer was made (regardless of the answer) so it
+    # never nags on subsequent runs.
+    completion_prompt_marker: Path = Path.home() / ".adjutantvoice" / ".completion_prompted"
+
     @property
     def voice_clone_path(self) -> Path:
         """Resolved path to the default voice-clone pickle.

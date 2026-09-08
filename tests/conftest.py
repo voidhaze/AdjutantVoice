@@ -100,4 +100,5 @@ def tmp_settings(tmp_path, monkeypatch):
     # assets/models/default.pkl. Tests covering the bundled-fallback
     # behavior explicitly write a file to this path first.
     monkeypatch.setattr(settings, "bundled_voice_clone_path", tmp_path / "bundled" / "default.pkl")
+    monkeypatch.setattr(settings, "completion_prompt_marker", tmp_path / ".completion_prompted")
     return settings

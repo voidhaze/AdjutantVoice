@@ -109,12 +109,26 @@ av install hermes
 ### Shell completion
 
 `av` supports tab completion for commands, sub-commands (`server`, `voice`,
-`mcp`, `install`, …), and option names, powered by Typer/Click:
+`mcp`, `install`, …), and option names, powered by Typer/Click.
+
+There's no such thing as a pip/pipx "post-install hook" for wheels, so this
+can't be wired up automatically at install time. Instead, the first time you
+run any real `av` command from an interactive terminal, it offers to set
+this up for you (a one-time prompt, recorded so it won't ask again):
+
+```
+Enable tab completion for the `av` command in your shell? [Y/n]
+```
+
+Answering yes runs the same thing as `av --install-completion` below —
+detects your shell and installs a completion script into the appropriate
+rc/config file. Restart your shell (or re-source the rc file) afterwards.
+
+You can also trigger or manage this manually at any point:
 
 ```bash
 # Auto-detects your shell (bash, zsh, fish, PowerShell) and installs a
-# completion script into the appropriate rc/config file. Restart your
-# shell (or re-source the rc file) afterwards.
+# completion script into the appropriate rc/config file.
 av --install-completion
 
 # Print the completion script instead of installing it, e.g. to review it
@@ -124,6 +138,10 @@ av --show-completion
 
 If shell auto-detection fails, pass the shell explicitly:
 `av --install-completion bash` (or `zsh` / `fish` / `powershell`).
+
+Set `AV_SKIP_COMPLETION_PROMPT=1` to suppress the one-time prompt entirely
+(e.g. in scripted/non-interactive environments where it wouldn't fire
+anyway, or if you just don't want to be asked).
 
 ## Configuration
 
@@ -137,6 +155,7 @@ All settings can be overridden via environment variables prefixed `AV_`:
 | `AV_DEVICE`         | `cuda:0`           | Torch device                 |
 | `AV_DTYPE`          | `float16`          | Model dtype                  |
 | `AV_VOICE_CLONE_PATH` | (bundled .pkl)   | Path to voice clone pickle   |
+| `AV_SKIP_COMPLETION_PROMPT` | (unset) | Set to skip the one-time "enable tab completion?" prompt on first interactive `av` use |
 
 ## Open WebUI
 
