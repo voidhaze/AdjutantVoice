@@ -56,6 +56,12 @@ class Settings(BaseSettings):
     # MCP output
     tts_output_dir: Path = Path("tts_output")
 
+    # CLI request timeouts (seconds), overrideable via
+    # AV_CLI_SPEAK_TIMEOUT / AV_CLI_SPEAK_FILE_TIMEOUT for slower
+    # hardware, larger files, or remote servers.
+    cli_speak_timeout: float = 60.0
+    cli_speak_file_timeout: float = 120.0
+
     # CLI
     #
     # There's no such thing as a pip/pipx "post-install hook" for wheels,

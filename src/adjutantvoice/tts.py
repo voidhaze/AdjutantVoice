@@ -8,6 +8,7 @@ Nothing here depends on FastAPI, FastMCP, or any transport layer.
 from __future__ import annotations
 
 import io
+import logging
 import pickle
 import threading
 from pathlib import Path
@@ -18,6 +19,8 @@ import torch
 from omnivoice import OmniVoice
 
 from adjutantvoice.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -55,7 +58,7 @@ def load(
         "float32": torch.float32,
     }.get(settings.dtype, torch.float16)
 
-    print(f"AdjutantVoice: loading OmniVoice model ({settings.model_id}) …")
+    logger.info("Loading OmniVoice model (%s) …", settings.model_id)
     _model = OmniVoice.from_pretrained(
         settings.model_id,
         device_map=settings.device,
@@ -69,19 +72,20 @@ def load(
         clone_path = settings.bundled_voice_clone_path
 
     if clone_path.exists():
-        print(f"AdjutantVoice: loading voice clone from {clone_path} …")
+        logger.info("Loading voice clone from %s …", clone_path)
         with open(clone_path, "rb") as fh:
             _voice_clone_prompt = pickle.load(fh)
     else:
-        print(
-            f"AdjutantVoice: no voice clone found at {clone_path} — "
-            f"falling back to the default '{settings.default_voice_instruct}' "
-            f"OmniVoice voice. Run `av voice create-clone` to generate one."
+        logger.info(
+            "No voice clone found at %s — falling back to the default '%s' "
+            "OmniVoice voice. Run `av voice create-clone` to generate one.",
+            clone_path,
+            settings.default_voice_instruct,
         )
         _voice_clone_prompt = None
 
     _loaded = True
-    print("AdjutantVoice: ready.")
+    logger.info("AdjutantVoice: ready.")
 
 
 def unload() -> None:
@@ -100,6 +104,20 @@ def is_loaded() -> bool:
 def using_voice_clone() -> bool:
     """Return True if a voice-clone prompt is active (vs. the fallback voice)."""
     return _voice_clone_prompt is not None
+
+
+def get_model() -> OmniVoice:
+    """Return the loaded OmniVoice model, loading it first if necessary.
+
+    Lets callers that need direct model access (e.g.
+    :func:`adjutantvoice.voice.create_voice_clone`) reuse the same
+    singleton-loading logic as the server/CLI synthesis path instead of
+    duplicating the dtype resolution and ``from_pretrained`` call — and, if
+    a model is already loaded in this process, avoids loading a second copy.
+    """
+    if not _loaded:
+        load()
+    return _model
 
 
 # ---------------------------------------------------------------------------
@@ -144,3 +162,40 @@ def synthesize_to_buffer(text: str) -> io.BytesIO:
     buf = io.BytesIO(data)
     buf.seek(0)
     return buf
+
+
+def synthesize_with_duration(text: str) -> tuple[bytes, float]:
+    """Like :func:`synthesize`, but also returns the exact audio duration.
+
+    Duration is computed from the raw sample count and configured sample
+    rate *before* MP3 encoding, so — unlike estimating it from the encoded
+    byte size afterwards — it isn't affected by bitrate/compression and is
+    exact rather than approximate.
+
+    Returns:
+        A ``(mp3_bytes, duration_seconds)`` tuple.
+
+    Raises:
+        RuntimeError: If the model has not been loaded yet.
+        ValueError: If *text* is blank.
+    """
+    if not is_loaded():
+        raise RuntimeError("TTS model is not loaded. Call tts.load() first.")
+
+    text = text.strip()
+    if not text:
+        raise ValueError("text must not be empty")
+
+    with _inference_lock:
+        if _voice_clone_prompt is not None:
+            audio = _model.generate(text=text, voice_clone_prompt=_voice_clone_prompt)
+        else:
+            audio = _model.generate(text=text, instruct=settings.default_voice_instruct)
+
+    samples = audio[0]
+    duration_s = round(len(samples) / settings.sample_rate, 1)
+
+    buf = io.BytesIO()
+    sf.write(buf, samples, settings.sample_rate, format="MP3")
+    buf.seek(0)
+    return buf.getvalue(), duration_s

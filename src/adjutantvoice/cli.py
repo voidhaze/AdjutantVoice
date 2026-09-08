@@ -187,6 +187,9 @@ def speak(
     server_url: str = typer.Option(
         f"http://localhost:{settings.port}", "--server", help="Base URL of a running 'av server start' instance."
     ),
+    timeout: float = typer.Option(
+        settings.cli_speak_timeout, "--timeout", help="Seconds to wait for the server before giving up."
+    ),
 ):
     """
     Synthesise text via the running server and play it, or save it to a file.
@@ -195,7 +198,8 @@ def speak(
     Playback uses ffplay; if it's not installed, use --output to save the MP3
     instead of playing it.
     """
-    content = _synthesize(server_url, text, timeout=60)
+    _require_non_blank(text)
+    content = _synthesize(server_url, text, timeout=timeout)
 
     if output:
         output.write_bytes(content)
@@ -220,6 +224,9 @@ def speak_file(
     server_url: str = typer.Option(
         f"http://localhost:{settings.port}", "--server", help="Base URL of a running 'av server start' instance."
     ),
+    timeout: float = typer.Option(
+        settings.cli_speak_file_timeout, "--timeout", help="Seconds to wait for the server before giving up."
+    ),
 ):
     """
     Read a text file in full and synthesise it via the running server.
@@ -233,7 +240,8 @@ def speak_file(
         raise typer.Exit(code=1)
 
     text = input_file.read_text(encoding="utf-8")
-    content = _synthesize(server_url, text, timeout=120)
+    _require_non_blank(text, source=str(input_file))
+    content = _synthesize(server_url, text, timeout=timeout)
 
     if output:
         output.write_bytes(content)
@@ -339,6 +347,15 @@ def install_hermes():
 # ---------------------------------------------------------------------------
 # Internal helpers
 # ---------------------------------------------------------------------------
+
+def _require_non_blank(text: str, source: Optional[str] = None) -> None:
+    """Fail fast with a clear message instead of round-tripping to the
+    server just to get the same rejection back as an HTTP 400."""
+    if not text.strip():
+        where = f" in {source}" if source else ""
+        typer.echo(f"No text to synthesise{where} — text is empty.", err=True)
+        raise typer.Exit(code=1)
+
 
 def _synthesize(server_url: str, text: str, timeout: float) -> bytes:
     """POST text to the running TTS server's /synthesize endpoint.

@@ -4,13 +4,14 @@ Voice clone utilities — create and manage voice-clone prompts.
 
 from __future__ import annotations
 
+import logging
 import pickle
 from pathlib import Path
 
-import torch
-from omnivoice import OmniVoice
-
+from adjutantvoice import tts
 from adjutantvoice.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 def create_voice_clone(
@@ -29,25 +30,19 @@ def create_voice_clone(
     """
     output_path = output_path or settings.voice_clone_path
 
-    dtype = {
-        "float16": torch.float16,
-        "bfloat16": torch.bfloat16,
-        "float32": torch.float32,
-    }.get(settings.dtype, torch.float16)
+    # Reuse the same singleton-loading path as the server/CLI synthesis
+    # flow (tts.load) instead of duplicating the dtype resolution and
+    # `OmniVoice.from_pretrained` call here. If a model is already loaded
+    # in this process, this returns it directly rather than loading a
+    # second copy.
+    model = tts.get_model()
 
-    print(f"Loading OmniVoice model to create voice clone …")
-    model = OmniVoice.from_pretrained(
-        settings.model_id,
-        device_map=settings.device,
-        dtype=dtype,
-    )
-
-    print(f"Creating voice clone from {ref_audio} …")
+    logger.info("Creating voice clone from %s …", ref_audio)
     voice_clone_prompt = model.create_voice_clone_prompt(ref_audio=str(ref_audio))
 
     output_path.parent.mkdir(parents=True, exist_ok=True)
     with open(output_path, "wb") as fh:
         pickle.dump(voice_clone_prompt, fh)
 
-    print(f"Voice clone saved to {output_path}")
+    logger.info("Voice clone saved to %s", output_path)
     return output_path.resolve()

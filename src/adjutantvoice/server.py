@@ -19,6 +19,7 @@ Run directly:
   av server start
 """
 
+import logging
 from contextlib import asynccontextmanager
 
 import uvicorn
@@ -28,6 +29,8 @@ from pydantic import BaseModel
 
 from adjutantvoice import tts
 from adjutantvoice.config import settings
+
+logger = logging.getLogger(__name__)
 
 
 # ---------------------------------------------------------------------------
@@ -108,7 +111,16 @@ def _synthesis_response(text: str) -> StreamingResponse:
     try:
         buf = tts.synthesize_to_buffer(text)
     except ValueError as exc:
+        # ValueError here is always our own deliberate, user-facing
+        # validation message (e.g. "text must not be empty") — safe to
+        # pass through as-is.
         raise HTTPException(status_code=400, detail=str(exc)) from exc
+    except Exception:
+        # Anything else is unexpected (model/inference failure, etc.).
+        # Log the full detail server-side but don't leak internal paths,
+        # config, or tracebacks to the client.
+        logger.exception("Unexpected error during synthesis")
+        raise HTTPException(status_code=500, detail="Synthesis failed unexpectedly") from None
     return StreamingResponse(buf, media_type="audio/mpeg")
 
 

@@ -169,3 +169,63 @@ def test_synthesize_to_buffer_returns_seeked_bytesio(monkeypatch, fake_omnivoice
 
     assert buf.tell() == 0
     assert buf.read() == b"FAKE_MP3"
+
+
+# ---------------------------------------------------------------------------
+# get_model
+# ---------------------------------------------------------------------------
+
+def test_get_model_loads_when_not_loaded(monkeypatch, fake_omnivoice_cls, fake_model, tmp_settings):
+    monkeypatch.setattr(tts, "OmniVoice", fake_omnivoice_cls)
+    assert tts.is_loaded() is False
+
+    model = tts.get_model()
+
+    assert tts.is_loaded() is True
+    assert model is fake_model
+    fake_omnivoice_cls.from_pretrained.assert_called_once()
+
+
+def test_get_model_reuses_existing_model_without_reloading(
+    monkeypatch, fake_omnivoice_cls, fake_model, tmp_settings
+):
+    monkeypatch.setattr(tts, "OmniVoice", fake_omnivoice_cls)
+    tts.load()
+
+    model = tts.get_model()
+
+    assert model is fake_model
+    fake_omnivoice_cls.from_pretrained.assert_called_once()  # not called again
+
+
+# ---------------------------------------------------------------------------
+# synthesize_with_duration
+# ---------------------------------------------------------------------------
+
+def test_synthesize_with_duration_computes_exact_duration_from_samples(
+    monkeypatch, fake_omnivoice_cls, fake_model, tmp_settings
+):
+    monkeypatch.setattr(tts, "OmniVoice", fake_omnivoice_cls)
+    monkeypatch.setattr(tts.sf, "write", lambda buf, audio, rate, format: buf.write(b"FAKE_MP3"))
+    # sample_rate defaults to 24_000 — 12_000 samples is exactly 0.5s,
+    # independent of whatever the encoded MP3 byte size happens to be.
+    fake_model.generate.return_value = [[0.0] * 12_000]
+    tts.load()
+
+    mp3_bytes, duration_s = tts.synthesize_with_duration("hello world")
+
+    assert mp3_bytes == b"FAKE_MP3"
+    assert duration_s == 0.5
+
+
+def test_synthesize_with_duration_raises_if_not_loaded():
+    with pytest.raises(RuntimeError, match="not loaded"):
+        tts.synthesize_with_duration("hello")
+
+
+def test_synthesize_with_duration_raises_on_blank_text(monkeypatch, fake_omnivoice_cls, tmp_settings):
+    monkeypatch.setattr(tts, "OmniVoice", fake_omnivoice_cls)
+    tts.load()
+
+    with pytest.raises(ValueError, match="empty"):
+        tts.synthesize_with_duration("   ")

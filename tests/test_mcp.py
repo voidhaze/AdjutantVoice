@@ -17,6 +17,7 @@ from adjutantvoice import tts
 @pytest.fixture(autouse=True)
 def fake_synthesize(monkeypatch):
     monkeypatch.setattr(tts, "synthesize", lambda text: b"FAKE_MP3")
+    monkeypatch.setattr(tts, "synthesize_with_duration", lambda text: (b"FAKE_MP3", 3.2))
 
 
 # ---------------------------------------------------------------------------
@@ -71,7 +72,7 @@ def test_tts_speak_plays_and_confirms(monkeypatch):
 
     result = mcp_module.tts_speak("hello there", ctx=None)
 
-    assert "Played" in result
+    assert result == "Played 3.2 s of audio."
     assert len(calls) == 1
     assert calls[0][0][0][0] == "ffplay"
 

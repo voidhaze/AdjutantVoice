@@ -93,6 +93,32 @@ def test_speak_http_error_shows_status_and_detail(monkeypatch):
     assert "500" in result.output
 
 
+def test_speak_rejects_blank_text_without_calling_server(monkeypatch):
+    post_calls = []
+    monkeypatch.setattr(requests, "post", lambda *a, **k: post_calls.append(1) or _FakeResponse())
+
+    result = runner.invoke(cli.app, ["speak", "   "])
+
+    assert result.exit_code == 1
+    assert "empty" in result.output
+    assert post_calls == []  # never hit the network for text we already know is blank
+
+
+def test_speak_passes_custom_timeout_through(monkeypatch):
+    captured = {}
+
+    def _fake_post(*a, **k):
+        captured["timeout"] = k.get("timeout")
+        return _FakeResponse()
+
+    monkeypatch.setattr(requests, "post", _fake_post)
+
+    result = runner.invoke(cli.app, ["speak", "hello there", "--timeout", "5"])
+
+    assert result.exit_code == 0
+    assert captured["timeout"] == 5.0
+
+
 # ---------------------------------------------------------------------------
 # av speak-file
 # ---------------------------------------------------------------------------
@@ -116,6 +142,20 @@ def test_speak_file_reads_and_synthesizes(monkeypatch, tmp_path):
 
     assert result.exit_code == 0
     assert out_file.read_bytes() == b"FAKE_MP3"
+
+
+def test_speak_file_rejects_blank_file_without_calling_server(monkeypatch, tmp_path):
+    post_calls = []
+    monkeypatch.setattr(requests, "post", lambda *a, **k: post_calls.append(1) or _FakeResponse())
+    text_file = tmp_path / "empty.txt"
+    text_file.write_text("   \n  ", encoding="utf-8")
+
+    result = runner.invoke(cli.app, ["speak-file", str(text_file)])
+
+    assert result.exit_code == 1
+    assert "empty" in result.output
+    assert str(text_file) in result.output
+    assert post_calls == []
 
 
 # ---------------------------------------------------------------------------

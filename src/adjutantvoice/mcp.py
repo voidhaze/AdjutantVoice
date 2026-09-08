@@ -134,13 +134,14 @@ def tts_speak(text: str, ctx: Context) -> str:
         text: The text to speak aloud.
 
     Returns:
-        A short confirmation string, e.g. ``'Played ~3.2 s of audio.'``
-        Duration is estimated from the MP3 byte length and may not be exact.
+        A short confirmation string, e.g. ``'Played 3.2 s of audio.'``
+        Duration is computed from the raw sample count, so it's exact
+        rather than estimated from the encoded MP3 size.
 
     Raises:
         RuntimeError: If ``ffplay`` is not found on the server's PATH.
     """
-    mp3_bytes = tts.synthesize(text)
+    mp3_bytes, duration_s = tts.synthesize_with_duration(text)
 
     with tempfile.NamedTemporaryFile(suffix=".mp3", delete=False) as tmp:
         tmp_path = Path(tmp.name)
@@ -152,8 +153,7 @@ def tts_speak(text: str, ctx: Context) -> str:
             check=True,
             capture_output=True,
         )
-        duration_s = round(len(mp3_bytes) / 16_000, 1)
-        return f"Played ~{duration_s} s of audio."
+        return f"Played {duration_s} s of audio."
     except FileNotFoundError:
         raise RuntimeError(
             "ffplay not found. Install ffmpeg on the server machine "

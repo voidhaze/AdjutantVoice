@@ -112,3 +112,22 @@ def test_synthesize_400_on_blank_text(monkeypatch, fake_omnivoice_cls, tmp_setti
     resp = client.post("/synthesize", json={"text": "   "})
 
     assert resp.status_code == 400
+
+
+def test_synthesize_500_on_unexpected_error_does_not_leak_internals(
+    monkeypatch, fake_omnivoice_cls, tmp_settings
+):
+    _load_fake_model(monkeypatch, fake_omnivoice_cls, tmp_settings)
+
+    def _boom(text):
+        raise RuntimeError(f"CUDA out of memory at {tmp_settings.voice_clone_dir}")
+
+    monkeypatch.setattr(tts, "synthesize_to_buffer", _boom)
+
+    resp = client.post("/synthesize", json={"text": "hello there"})
+
+    assert resp.status_code == 500
+    detail = resp.json()["detail"]
+    assert detail == "Synthesis failed unexpectedly"
+    assert "CUDA" not in detail
+    assert str(tmp_settings.voice_clone_dir) not in detail
