@@ -1,6 +1,35 @@
 # AdjutantVoice
 
-AdjutantVoice is a self-hosted OmniVoice TTS server and Python toolkit for local voice cloning and AI-agent voice output. It provides an OpenAI-compatible TTS API, FastMCP server, Hermes Agent integration, and a command-line interface.
+AdjutantVoice is a local OmniVoice text-to-speech (TTS) server with voice cloning, an OpenAI-compatible speech API, FastMCP/MCP support, and integrations for Hermes Agent, Claude Desktop, Claude Code and other AI applications.
+
+Run high-quality voice synthesis locally using the OmniVoice model without relying on a cloud TTS provider.
+
+AdjutantVoice provides:
+
+Local TTS using OmniVoice and PyTorch
+Voice cloning from reference audio
+Persistent TTS server so the model is loaded once and reused
+FastAPI HTTP server
+OpenAI-compatible /v1/audio/speech API
+Model Context Protocol (MCP) server via FastMCP
+Claude Desktop and Claude Code integration
+Hermes Agent custom TTS integration
+Command-line interface (av)
+MP3 generation, streaming and server-side playback
+NVIDIA CUDA acceleration for local inference
+Why AdjutantVoice?
+
+AdjutantVoice is designed for developers who want a self-hosted, local TTS backend for AI agents and applications.
+
+Instead of coupling an application directly to an individual TTS implementation, AdjutantVoice keeps the OmniVoice model running in a persistent server and exposes several standard interfaces:
+
+AI application → OpenAI-compatible TTS API → AdjutantVoice → OmniVoice
+
+or
+
+AI agent → MCP → AdjutantVoice → OmniVoice
+
+This makes the same local voice synthesis engine usable from multiple AI clients and agent frameworks.
 
 ## Structure
 
