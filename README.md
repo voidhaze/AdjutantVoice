@@ -106,6 +106,25 @@ av voice create-clone [--ref-audio path/to/audio.mp3] [--output path/to/clone.pk
 av install hermes
 ```
 
+### Shell completion
+
+`av` supports tab completion for commands, sub-commands (`server`, `voice`,
+`mcp`, `install`, …), and option names, powered by Typer/Click:
+
+```bash
+# Auto-detects your shell (bash, zsh, fish, PowerShell) and installs a
+# completion script into the appropriate rc/config file. Restart your
+# shell (or re-source the rc file) afterwards.
+av --install-completion
+
+# Print the completion script instead of installing it, e.g. to review it
+# first or wire it up yourself.
+av --show-completion
+```
+
+If shell auto-detection fails, pass the shell explicitly:
+`av --install-completion bash` (or `zsh` / `fish` / `powershell`).
+
 ## Configuration
 
 All settings can be overridden via environment variables prefixed `AV_`:

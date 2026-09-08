@@ -89,3 +89,8 @@ testing against a real GPU machine.
 - **`@mcp.tool(...)` returns the plain function** (verified against the
   installed `fastmcp` version), so MCP tools can be called directly in
   tests without spinning up a real MCP transport.
+- **Shell completion (`av --install-completion`) is not covered by the
+  suite.** It's inherently interactive/shell-specific (writes into a
+  shell rc file and depends on `shellingham` detecting the *running*
+  shell), so there's nothing meaningful to unit test — verify it manually
+  by running the command and restarting your shell.
