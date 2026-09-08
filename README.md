@@ -6,17 +6,17 @@ Run high-quality voice synthesis locally using the OmniVoice model without relyi
 
 AdjutantVoice provides:
 
-Local TTS using OmniVoice and PyTorch
-Voice cloning from reference audio
-Persistent TTS server so the model is loaded once and reused
-FastAPI HTTP server
-OpenAI-compatible /v1/audio/speech API
-Model Context Protocol (MCP) server via FastMCP
-Claude Desktop and Claude Code integration
-Hermes Agent custom TTS integration
-Command-line interface (av)
-MP3 generation, streaming and server-side playback
-NVIDIA CUDA acceleration for local inference
+- Local TTS using OmniVoice and PyTorch
+- Voice cloning from reference audio
+- Persistent TTS server so the model is loaded once and reused
+- FastAPI HTTP server
+- OpenAI-compatible /v1/audio/speech API
+- Model Context Protocol (MCP) server via FastMCP
+- Claude Desktop and Claude Code integration
+- Hermes Agent custom TTS integration
+- Command-line interface (av)
+- MP3 generation, streaming and server-side playback
+- NVIDIA CUDA acceleration for local inference
 
 AdjutantVoice is designed for developers who want a self-hosted, local TTS backend for AI agents and applications.
 
@@ -231,10 +231,10 @@ Install via CLI, run the server and then enable "/voice on" and "/voice tts" ins
 
 AdjutantVoice can be used as a local voice backend for:
 
-AI coding agents — give Hermes Agent, Claude Code and other agents spoken responses.
-Claude Desktop — expose local text-to-speech through MCP.
-OpenAI-compatible applications — use AdjutantVoice anywhere an application supports the OpenAI speech API.
-Open WebUI — connect a local OmniVoice backend as a custom TTS provider.
-Voice assistants — use the persistent HTTP API as a local speech synthesis service.
-Voice cloning experiments — create and reuse a voice clone from reference audio.
-Local/private AI systems — perform TTS locally without sending text or voice data to a cloud provider.
+- AI coding agents — give Hermes Agent, Claude Code and other agents spoken responses.
+- Claude Desktop — expose local text-to-speech through MCP.
+- OpenAI-compatible applications — use AdjutantVoice anywhere an application supports the OpenAI speech API.
+- Open WebUI — connect a local OmniVoice backend as a custom TTS provider.
+- Voice assistants — use the persistent HTTP API as a local speech synthesis service.
+- Voice cloning experiments — create and reuse a voice clone from reference audio.
+- Local/private AI systems — perform TTS locally without sending text or voice data to a cloud provider.
