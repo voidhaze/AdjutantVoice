@@ -25,6 +25,13 @@ def test_voice_clone_path_updates_if_dir_changes():
     assert s.voice_clone_path == Path("/tmp/other-voices") / f"{s.default_voice_clone_name}.pkl"
 
 
+def test_bundled_voice_clone_path_defaults_into_package_assets():
+    s = Settings(_env_file=None)
+    assert s.bundled_voice_clone_path.name == "default.pkl"
+    assert s.bundled_voice_clone_path.parent.name == "models"
+    assert s.bundled_voice_clone_path.exists()  # checked into the repo
+
+
 def test_env_var_overrides_default(monkeypatch):
     monkeypatch.setenv("AV_PORT", "9999")
     monkeypatch.setenv("AV_HOST", "127.0.0.1")

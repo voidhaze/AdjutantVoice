@@ -18,7 +18,9 @@ def test_not_loaded_by_default():
 
 def test_load_without_clone_file_falls_back_to_default_voice(monkeypatch, fake_omnivoice_cls, tmp_settings):
     monkeypatch.setattr(tts, "OmniVoice", fake_omnivoice_cls)
-    # tmp_settings points voice_clone_dir at an empty tmp_path — no clone exists yet.
+    # tmp_settings points voice_clone_dir AND bundled_voice_clone_path at
+    # empty tmp_path locations — neither clone exists, so this covers the
+    # true "no clone anywhere" case (instruct-mode fallback).
 
     tts.load()
 
@@ -70,6 +72,44 @@ def test_load_respects_explicit_clone_path_override(monkeypatch, fake_omnivoice_
     tts.load(voice_clone_path=override_path)
 
     assert tts.using_voice_clone() is True
+
+
+def test_load_falls_back_to_bundled_clone_when_no_user_clone_exists(
+    monkeypatch, fake_omnivoice_cls, tmp_settings
+):
+    monkeypatch.setattr(tts, "OmniVoice", fake_omnivoice_cls)
+    # No file at tmp_settings.voice_clone_path, but the bundled default exists.
+
+    bundled_path = tmp_settings.bundled_voice_clone_path
+    bundled_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(bundled_path, "wb") as fh:
+        pickle.dump({"prompt": "bundled"}, fh)
+
+    tts.load()
+
+    assert tts.using_voice_clone() is True
+
+
+def test_load_prefers_user_clone_over_bundled_default(
+    monkeypatch, fake_omnivoice_cls, tmp_settings
+):
+    monkeypatch.setattr(tts, "OmniVoice", fake_omnivoice_cls)
+
+    bundled_path = tmp_settings.bundled_voice_clone_path
+    bundled_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(bundled_path, "wb") as fh:
+        pickle.dump({"prompt": "bundled"}, fh)
+
+    user_path = tmp_settings.voice_clone_path
+    user_path.parent.mkdir(parents=True, exist_ok=True)
+    with open(user_path, "wb") as fh:
+        pickle.dump({"prompt": "user"}, fh)
+
+    tts.load()
+
+    with open(user_path, "rb") as fh:
+        expected = pickle.load(fh)
+    assert tts._voice_clone_prompt == expected
 
 
 # ---------------------------------------------------------------------------

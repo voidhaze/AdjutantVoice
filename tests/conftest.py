@@ -95,4 +95,9 @@ def tmp_settings(tmp_path, monkeypatch):
 
     monkeypatch.setattr(settings, "voice_clone_dir", tmp_path / "voices")
     monkeypatch.setattr(settings, "tts_output_dir", tmp_path / "tts_output")
+    # Point the bundled-clone fallback at a path that doesn't exist by
+    # default, so tests are isolated from the real repo's checked-in
+    # assets/models/default.pkl. Tests covering the bundled-fallback
+    # behavior explicitly write a file to this path first.
+    monkeypatch.setattr(settings, "bundled_voice_clone_path", tmp_path / "bundled" / "default.pkl")
     return settings

@@ -36,13 +36,18 @@ class Settings(BaseSettings):
 
     # Voice
     #
-    # The voice clone is NOT bundled/checked into the repo — on a fresh
-    # clone, `voice_clone_path` will not exist yet. `tts.load()` detects
-    # this and falls back to `default_voice_instruct` (OmniVoice Voice
-    # Design mode) instead. Run `av voice create-clone` once to generate
-    # the default clone; after that it's picked up automatically.
+    # `tts.load()` looks for a clone in this order:
+    #   1. `voice_clone_path`        — user-generated, ~/.adjutantvoice/voices
+    #   2. `bundled_voice_clone_path` — shipped in the repo/package as the
+    #                                   out-of-the-box default
+    #   3. `default_voice_instruct`  — OmniVoice Voice Design mode, if
+    #                                   neither pickle is present
+    # This means a fresh install/clone works out of the box using the
+    # bundled clone; running `av voice create-clone` generates a personal
+    # one at `voice_clone_path` that takes precedence over it.
     voice_clone_dir: Path = Path.home() / ".adjutantvoice" / "voices"
     default_voice_clone_name: str = "default"
+    bundled_voice_clone_path: Path = ASSETS_DIR / "models" / "default.pkl"
     ref_audio_path: Path = ASSETS_DIR / "adjutant-terran-advisor-quotes.mp3"
     default_voice_instruct: str = "female"
     sample_rate: int = 24_000

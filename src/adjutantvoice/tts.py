@@ -62,7 +62,12 @@ def load(
         dtype=dtype,
     )
 
+    # Resolution order: explicit override > user-generated clone >
+    # bundled default clone > instruct-mode fallback.
     clone_path = voice_clone_path or settings.voice_clone_path
+    if not clone_path.exists() and settings.bundled_voice_clone_path.exists():
+        clone_path = settings.bundled_voice_clone_path
+
     if clone_path.exists():
         print(f"AdjutantVoice: loading voice clone from {clone_path} …")
         with open(clone_path, "rb") as fh:

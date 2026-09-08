@@ -26,8 +26,9 @@ error (`extra="ignore"`).
 | `model_id` | `AV_MODEL_ID` | `k2-fsa/OmniVoice` | HuggingFace-style model identifier passed to `OmniVoice.from_pretrained()`. |
 | `device` | `AV_DEVICE` | `cuda:0` | Torch device string for model placement. |
 | `dtype` | `AV_DTYPE` | `float16` | One of `float16`, `bfloat16`, `float32`. Unrecognized values silently fall back to `float16` (see `tts.py` / `voice.py`). |
-| `voice_clone_dir` | `AV_VOICE_CLONE_DIR` | `~/.adjutantvoice/voices` | Directory where clone `.pkl` files live. |
+| `voice_clone_dir` | `AV_VOICE_CLONE_DIR` | `~/.adjutantvoice/voices` | Directory where user-generated clone `.pkl` files live. |
 | `default_voice_clone_name` | `AV_DEFAULT_VOICE_CLONE_NAME` | `default` | Base filename (without `.pkl`) for the clone `tts.load()` looks for automatically. |
+| `bundled_voice_clone_path` | `AV_BUNDLED_VOICE_CLONE_PATH` | `<package>/assets/models/default.pkl` | Voice-clone pickle shipped in the repo/package. Used when no clone exists at `voice_clone_path`, so a fresh install works out of the box without running `av voice create-clone`. |
 | `ref_audio_path` | `AV_REF_AUDIO_PATH` | `<package>/assets/adjutant-terran-advisor-quotes.mp3` | Default reference audio for `av voice create-clone` when `--ref-audio` isn't given. |
 | `default_voice_instruct` | `AV_DEFAULT_VOICE_INSTRUCT` | `female` | OmniVoice Voice Design instruct string used when no clone is found. |
 | `sample_rate` | `AV_SAMPLE_RATE` | `24000` | Sample rate (Hz) used when encoding synthesized audio to MP3. |
@@ -46,6 +47,22 @@ settings.voice_clone_path == settings.voice_clone_dir / f"{settings.default_voic
 So overriding either `AV_VOICE_CLONE_DIR` or `AV_DEFAULT_VOICE_CLONE_NAME`
 changes where `tts.load()` looks for a clone, without needing a third
 setting for the combined path.
+
+## Clone resolution order
+
+`tts.load()` picks a voice-clone pickle in this order, falling through to
+the next option if a path doesn't exist:
+
+1. An explicit `voice_clone_path=` argument to `tts.load()`.
+2. `settings.voice_clone_path` — a personal clone generated via
+   `av voice create-clone`.
+3. `settings.bundled_voice_clone_path` — the clone shipped in the repo.
+4. Neither exists → falls back to `default_voice_instruct` (OmniVoice
+   Voice Design mode).
+
+This means a fresh clone/install of AdjutantVoice speaks with the bundled
+default voice out of the box; generating a personal clone with
+`av voice create-clone` automatically takes precedence over it.
 
 ## Example `.env`
 
