@@ -1,6 +1,6 @@
 # AdjutantVoice
 
-OmniVoice TTS toolkit — persistent FastAPI server, Hermes Agent Custom TTS compatibility, FastMCP server, and a unified CLI.
+AdjutantVoice is a self-hosted OmniVoice TTS server and Python toolkit for local voice cloning and AI-agent voice output. It provides an OpenAI-compatible TTS API, FastMCP server, Hermes Agent integration, Open WebUI integration, and a command-line interface.
 
 ## Structure
 
