@@ -113,7 +113,7 @@ def server_start(
     ),
 ):
     """
-    Start the TTS HTTP server, including the Open WebUI-compatible /v1/ endpoints.
+    Start the TTS HTTP server, including the OpenAI-compatible /v1/ audio endpoints.
 
     The server loads the OmniVoice model on first request and keeps it resident
     in memory (singleton, thread-locked) for subsequent calls, so the first

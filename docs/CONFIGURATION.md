@@ -31,7 +31,7 @@ error (`extra="ignore"`).
 | `bundled_voice_clone_path` | `AV_BUNDLED_VOICE_CLONE_PATH` | `<package>/assets/models/default.pkl` | Voice-clone pickle shipped in the repo/package. Used when no clone exists at `voice_clone_path`, so a fresh install works out of the box without running `av voice create-clone`. |
 | `default_voice_instruct` | `AV_DEFAULT_VOICE_INSTRUCT` | `female` | OmniVoice Voice Design instruct string used when no clone is found. |
 | `sample_rate` | `AV_SAMPLE_RATE` | `24000` | Sample rate (Hz) used when encoding synthesized audio to MP3. |
-| `available_voices` | `AV_AVAILABLE_VOICES` | `["adjutant"]` | Voice list reported by `GET /v1/audio/voices` (Open WebUI). |
+| `available_voices` | `AV_AVAILABLE_VOICES` | `["adjutant"]` | Voice list reported by `GET /v1/audio/voices` (OpenAI-compatible audio API). |
 | `model_label` | `AV_MODEL_LABEL` | `omnivoice` | Model id reported by `GET /v1/models` and used as the default `model` field in `/v1/audio/speech` requests. |
 | `tts_output_dir` | `AV_TTS_OUTPUT_DIR` | `tts_output` (relative to CWD) | Directory the MCP `tts_file` tool writes generated MP3s into. Created automatically on MCP server startup. |
 | `completion_prompt_marker` | `AV_COMPLETION_PROMPT_MARKER` | `~/.adjutantvoice/.completion_prompted` | Marker file recording that the one-time "enable tab completion?" prompt has already been shown, so `av` doesn't ask again. Set `AV_SKIP_COMPLETION_PROMPT=1` (not a `Settings` field — read directly from the environment) to suppress the prompt outright. |

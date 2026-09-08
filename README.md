@@ -10,7 +10,7 @@ src/adjutantvoice/
 ├── config.py          # all settings, overrideable via AV_* env vars
 ├── tts.py             # core synthesis engine (model loading, inference)
 ├── voice.py           # voice-clone creation utilities
-├── server.py          # FastAPI server (legacy + Open WebUI /v1 endpoints)
+├── server.py          # FastAPI server (legacy + OpenAI-compatible /v1 audio endpoints)
 ├── mcp.py             # FastMCP server (tts_file, tts_stream, tts_speak)
 ├── cli.py             # unified `av` CLI entry point
 ├── assets/

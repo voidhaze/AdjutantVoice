@@ -90,9 +90,9 @@ Two API surfaces on the same app:
 
 - **Legacy**: `POST /synthesize` — used by the CLI and the Hermes command
   client (`clients/hermes.py`).
-- **Open WebUI Custom TTS**: `GET /v1/models`, `GET /v1/audio/voices`,
-  `POST /v1/audio/speech` — lets AdjutantVoice be configured directly as a
-  TTS engine in Open WebUI.
+- **OpenAI-compatible audio API**: `GET /v1/models`, `GET /v1/audio/voices`,
+  `POST /v1/audio/speech` — implements the OpenAI audio/speech API, so
+  AdjutantVoice can be plugged into any client that speaks it as a TTS engine.
 
 Both surfaces funnel through the same `_synthesis_response()` helper, which
 translates `tts.py`'s exceptions into HTTP status codes: `503` if the model
@@ -131,9 +131,10 @@ turned into actionable one-line messages rather than raw tracebacks.
   `adjutantvoice.clients.hermes` — a minimal script that reads a text file,
   POSTs it to a running AdjutantVoice server, and writes the MP3 response —
   so no Hermes-specific plugin is required.
-- **Open WebUI**: point Open WebUI's Custom TTS engine at
-  `http://<host>:<port>/v1` — no extra integration code needed, since
-  `server.py` implements the expected endpoints directly.
+- **OpenAI-compatible TTS clients**: point the client's TTS engine at
+  `http://<host>:<port>/v1` (API key: any non-empty value) — no extra
+  integration code needed, since `server.py` implements the OpenAI
+  audio/speech endpoints directly.
 
 ## Configuration
 

@@ -56,22 +56,22 @@ def test_health_reports_clone_voice_mode(monkeypatch, fake_omnivoice_cls, tmp_se
 
 
 # ---------------------------------------------------------------------------
-# Open WebUI endpoints
+# OpenAI-compatible audio API endpoints
 # ---------------------------------------------------------------------------
 
-def test_owui_models():
+def test_openai_models():
     resp = client.get("/v1/models")
     assert resp.status_code == 200
     assert resp.json() == {"data": [{"id": "omnivoice", "name": "OmniVoice"}]}
 
 
-def test_owui_voices():
+def test_openai_voices():
     resp = client.get("/v1/audio/voices")
     assert resp.status_code == 200
     assert resp.json() == {"voices": ["adjutant"]}
 
 
-def test_owui_speech_success(monkeypatch, fake_omnivoice_cls, tmp_settings):
+def test_openai_speech_success(monkeypatch, fake_omnivoice_cls, tmp_settings):
     _load_fake_model(monkeypatch, fake_omnivoice_cls, tmp_settings)
 
     resp = client.post("/v1/audio/speech", json={"input": "hello there"})
@@ -81,7 +81,7 @@ def test_owui_speech_success(monkeypatch, fake_omnivoice_cls, tmp_settings):
     assert resp.content == b"FAKE_MP3"
 
 
-def test_owui_speech_503_when_model_not_loaded():
+def test_openai_speech_503_when_model_not_loaded():
     resp = client.post("/v1/audio/speech", json={"input": "hello there"})
     assert resp.status_code == 503
 

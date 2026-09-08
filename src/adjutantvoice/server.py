@@ -3,15 +3,15 @@ AdjutantVoice FastAPI server.
 
 Exposes:
   POST /synthesize               — legacy endpoint (Hermes / CLI clients)
-  GET  /v1/models                — Open WebUI Custom TTS
-  GET  /v1/audio/voices          — Open WebUI Custom TTS
-  POST /v1/audio/speech          — Open WebUI Custom TTS
+  GET  /v1/models                — OpenAI-compatible audio API
+  GET  /v1/audio/voices          — OpenAI-compatible audio API
+  POST /v1/audio/speech          — OpenAI-compatible audio API
   GET  /health                   — liveness probe
 
-Configure in Open WebUI:
-  Admin → Settings → Audio → TTS Engine: Custom TTS
+The /v1/ endpoints implement the OpenAI audio/speech API, so any
+OpenAI-compatible TTS client can talk to this server. Point the client at:
   API Base URL : http://<host>:<port>/v1
-  API Key      : (leave blank)
+  API Key      : (any non-empty value; not checked)
 
 Run directly:
   python -m adjutantvoice.server
@@ -48,18 +48,18 @@ app = FastAPI(title="AdjutantVoice TTS Server", lifespan=lifespan)
 
 
 # ---------------------------------------------------------------------------
-# Open WebUI Custom TTS endpoints (/v1/…)
+# OpenAI-compatible audio API endpoints (/v1/…)
 # ---------------------------------------------------------------------------
 
 @app.get("/v1/models")
-def owui_models():
-    """Return the model list Open WebUI expects."""
+def openai_models():
+    """Return the model list in the OpenAI API shape."""
     return {"data": [{"id": settings.model_label, "name": "OmniVoice"}]}
 
 
 @app.get("/v1/audio/voices")
-def owui_voices():
-    """Return the voice list Open WebUI expects."""
+def openai_voices():
+    """Return the available voices (OpenAI-compatible audio API extension)."""
     return {"voices": settings.available_voices}
 
 
@@ -70,8 +70,8 @@ class SpeechRequest(BaseModel):
 
 
 @app.post("/v1/audio/speech")
-def owui_speech(req: SpeechRequest):
-    """Synthesize speech — called by Open WebUI for every TTS chunk."""
+def openai_speech(req: SpeechRequest):
+    """Synthesize speech — the OpenAI audio/speech endpoint."""
     return _synthesis_response(req.input)
 
 
