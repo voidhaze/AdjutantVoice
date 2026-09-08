@@ -17,6 +17,7 @@ Hermes Agent custom TTS integration
 Command-line interface (av)
 MP3 generation, streaming and server-side playback
 NVIDIA CUDA acceleration for local inference
+
 Why AdjutantVoice?
 
 AdjutantVoice is designed for developers who want a self-hosted, local TTS backend for AI agents and applications.
