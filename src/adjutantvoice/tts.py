@@ -11,6 +11,7 @@ import io
 import logging
 import pickle
 import threading
+import types
 from pathlib import Path
 from typing import Optional
 
@@ -37,6 +38,77 @@ _inference_lock = threading.Lock()
 # Lifecycle
 # ---------------------------------------------------------------------------
 
+class _CPUUnpickler(pickle.Unpickler):
+    """Unpickler that maps tensor storages to CPU.
+
+    Voice-clone pickles created on a CUDA machine embed CUDA storages, which
+    fail to load on CPU / XPU / MPS hosts. OmniVoice moves the prompt tokens
+    to the model's device during generation, so CPU is always safe here.
+    """
+
+    def find_class(self, module, name):
+        if module == "torch.storage" and name == "_load_from_bytes":
+            return lambda b: torch.load(io.BytesIO(b), map_location="cpu", weights_only=False)
+        return super().find_class(module, name)
+
+
+def _log_softmax(x: torch.Tensor, dim: int = -1) -> torch.Tensor:
+    return x - torch.logsumexp(x, dim=dim, keepdim=True)
+
+
+def _xpu_predict_tokens_with_scoring(self, c_logits, u_logits, gen_config):
+    """Copy of ``OmniVoice._predict_tokens_with_scoring`` without ``log_softmax``.
+
+    On Intel XPU (torch 2.14 / Arc 140V), ``softmax`` / ``log_softmax`` over a
+    last dim of 1025 — OmniVoice's audio vocab size — return wrong values,
+    which makes every generation come out as noise. ``logsumexp`` is correct.
+    """
+    from omnivoice.models.omnivoice import _filter_top_k, _gumbel_sample
+
+    if gen_config.guidance_scale != 0:
+        c_log_probs = _log_softmax(c_logits)
+        u_log_probs = _log_softmax(u_logits)
+        log_probs = _log_softmax(
+            c_log_probs + gen_config.guidance_scale * (c_log_probs - u_log_probs)
+        )
+    else:
+        log_probs = _log_softmax(c_logits)
+
+    log_probs[..., self.config.audio_mask_id] = -float("inf")
+
+    if gen_config.class_temperature > 0.0:
+        filtered_probs = _filter_top_k(log_probs, ratio=0.1)
+        pred_tokens = _gumbel_sample(
+            filtered_probs, gen_config.class_temperature
+        ).argmax(dim=-1)
+    else:
+        pred_tokens = log_probs.argmax(dim=-1)
+
+    confidence_scores = log_probs.max(dim=-1)[0]
+
+    return pred_tokens, confidence_scores
+
+
+def _load_model() -> OmniVoice:
+    dtype = {
+        "float16": torch.float16,
+        "bfloat16": torch.bfloat16,
+        "float32": torch.float32,
+    }.get(settings.dtype, torch.float16)
+
+    logger.info("Loading OmniVoice model (%s) …", settings.model_id)
+    model = OmniVoice.from_pretrained(
+        settings.model_id,
+        device_map=settings.device,
+        dtype=dtype,
+    )
+    if settings.device.startswith("xpu"):
+        model._predict_tokens_with_scoring = types.MethodType(
+            _xpu_predict_tokens_with_scoring, model
+        )
+    return model
+
+
 def load(
     voice_clone_path: Optional[Path] = None,
 ) -> None:
@@ -52,18 +124,7 @@ def load(
     if _loaded:
         return  # already loaded
 
-    dtype = {
-        "float16": torch.float16,
-        "bfloat16": torch.bfloat16,
-        "float32": torch.float32,
-    }.get(settings.dtype, torch.float16)
-
-    logger.info("Loading OmniVoice model (%s) …", settings.model_id)
-    _model = OmniVoice.from_pretrained(
-        settings.model_id,
-        device_map=settings.device,
-        dtype=dtype,
-    )
+    _model = _load_model()
 
     # Resolution order: explicit override > user-generated clone >
     # bundled default clone > instruct-mode fallback.
@@ -74,7 +135,7 @@ def load(
     if clone_path.exists():
         logger.info("Loading voice clone from %s …", clone_path)
         with open(clone_path, "rb") as fh:
-            _voice_clone_prompt = pickle.load(fh)
+            _voice_clone_prompt = _CPUUnpickler(fh).load()
     else:
         logger.info(
             "No voice clone found at %s — falling back to the default '%s' "

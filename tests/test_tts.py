@@ -112,6 +112,50 @@ def test_load_prefers_user_clone_over_bundled_default(
     assert tts._voice_clone_prompt == expected
 
 
+def test_load_maps_cuda_tensor_storages_to_cpu(monkeypatch, fake_omnivoice_cls, tmp_settings):
+    """Clones pickled on a CUDA machine (like the bundled default.pkl) must
+    load on hosts without CUDA, so tensor storages are mapped to CPU."""
+    monkeypatch.setattr(tts, "OmniVoice", fake_omnivoice_cls)
+    calls = []
+
+    def fake_torch_load(f, **kwargs):
+        calls.append((f.read(), kwargs))
+        return "cpu-tensor"
+
+    monkeypatch.setattr(tts.torch, "load", fake_torch_load)
+
+    # What pickle emits for a tensor storage: torch.storage._load_from_bytes(<bytes>).
+    clone_path = tmp_settings.voice_clone_path
+    clone_path.parent.mkdir(parents=True, exist_ok=True)
+    clone_path.write_bytes(b"ctorch.storage\n_load_from_bytes\n(C\x07payloadtR.")
+
+    tts.load()
+
+    assert tts._voice_clone_prompt == "cpu-tensor"
+    assert calls == [(b"payload", {"map_location": "cpu", "weights_only": False})]
+
+
+def test_load_on_xpu_patches_token_scoring(monkeypatch, fake_omnivoice_cls, fake_model, tmp_settings):
+    monkeypatch.setattr(tts, "OmniVoice", fake_omnivoice_cls)
+    monkeypatch.setattr(tmp_settings, "device", "xpu")
+
+    tts.load()
+
+    patched = fake_model._predict_tokens_with_scoring
+    assert patched.__func__ is tts._xpu_predict_tokens_with_scoring
+    assert patched.__self__ is fake_model
+
+
+def test_load_on_cuda_leaves_token_scoring_alone(monkeypatch, fake_omnivoice_cls, fake_model, tmp_settings):
+    monkeypatch.setattr(tts, "OmniVoice", fake_omnivoice_cls)
+    monkeypatch.setattr(tmp_settings, "device", "cuda:0")
+    original = fake_model._predict_tokens_with_scoring
+
+    tts.load()
+
+    assert fake_model._predict_tokens_with_scoring is original
+
+
 # ---------------------------------------------------------------------------
 # Synthesis
 # ---------------------------------------------------------------------------
